@@ -20,7 +20,9 @@ namespace TheArchive.Features.Security
 
         public override string Description => "Prevents clients use modified gears.";
 
-        public override FeatureGroup Group => FeatureGroups.Security;
+        public override FeatureGroup Group => FeatureGroups.Security; 
+
+        public override bool SkipInitialOnEnable => true;
 
         public new static IArchiveLogger FeatureLogger { get; set; }
 
@@ -55,6 +57,11 @@ namespace TheArchive.Features.Security
         }
 
         public override void OnGameDataInitialized()
+        {
+            LoadData();
+        }
+
+        public override void OnEnable()
         {
             LoadData();
         }

@@ -23,6 +23,8 @@ namespace TheArchive.Features.Security
 
         public override FeatureGroup Group => FeatureGroups.Security;
 
+        public override bool SkipInitialOnEnable => true;
+
         public new static IArchiveLogger FeatureLogger { get; set; }
 
         [FeatureConfig]
@@ -56,6 +58,11 @@ namespace TheArchive.Features.Security
         }
 
         public override void OnGameDataInitialized()
+        {
+            BoosterImplantTemplateManager.LoadTemplateData();
+        }
+
+        public override void OnEnable()
         {
             BoosterImplantTemplateManager.LoadTemplateData();
         }
