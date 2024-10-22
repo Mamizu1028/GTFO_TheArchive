@@ -190,7 +190,7 @@ namespace TheArchive.Features.Accessibility
                 {
                     if (canShowPercentage && Settings.ShowSentryAmmoPercentage)
                     {
-                        float percentage = ammo.BulletsInPack / (float)ammo.BulletsMaxCap * 100f;
+                        float percentage = Mathf.FloorToInt(__instance.Ammo / __instance.CostOfBullet) / (float)ammo.BulletsMaxCap * 100f;
                         sentryArch = $"<color=white><size={Settings.PlayerNameSize * 100f}%>{__instance.ArchetypeName} <color={GetColorHexString(0, 100, percentage)}>{percentage:N0}%</color></size></color>";
                     }
                     else
@@ -200,7 +200,7 @@ namespace TheArchive.Features.Accessibility
                 }
                 else if (canShowPercentage && Settings.ShowSentryAmmoPercentage)
                 {
-                    float percentage = ammo.BulletsInPack / (float)ammo.BulletsMaxCap * 100f;
+                    float percentage = Mathf.FloorToInt(__instance.Ammo / __instance.CostOfBullet) / (float)ammo.BulletsMaxCap * 100f;
                     sentryArch = $"<color=white><size={Settings.PlayerNameSize * 100f}%><color={GetColorHexString(0, 100, percentage)}>{percentage:N0}%</color></size></color>";
                 }
 
@@ -276,13 +276,13 @@ namespace TheArchive.Features.Accessibility
 
                     var sentryArch = string.Empty;
                     var canShowPercentage = PlayerBackpackManager.TryGetBackpack(snetPlayer, out var backpack);
-                    var ammo = backpack.AmmoStorage.GetInventorySlotAmmo(AmmoType.Class);
+                    var ammo = backpack.AmmoStorage.GetInventorySlotAmmo(__instance.ItemDataBlock.inventorySlot);
 
                     if (Settings.ShowSentryArchetype)
                     {
                         if (canShowPercentage && Settings.ShowSentryAmmoPercentage)
                         {
-                            float percentage = ammo.BulletsInPack / (float)ammo.BulletsMaxCap * 100f;
+                            float percentage = Mathf.FloorToInt(__instance.Ammo / __instance.CostOfBullet) / (float)ammo.BulletsMaxCap * 100f;
                             sentryArch = $"<color=white><size={Settings.PlayerNameSize * 100f}%>{__instance.ArchetypeName} <color={GetColorHexString(0, 100, percentage)}>{percentage:N0}%</color></size></color>";
                         }
                         else
@@ -292,7 +292,7 @@ namespace TheArchive.Features.Accessibility
                     }
                     else if (canShowPercentage && Settings.ShowSentryAmmoPercentage)
                     {
-                        float percentage = ammo.BulletsInPack / (float)ammo.BulletsMaxCap * 100f;
+                        float percentage = Mathf.FloorToInt(__instance.Ammo / __instance.CostOfBullet) / (float)ammo.BulletsMaxCap * 100f;
                         sentryArch = $"<color=white><size={Settings.PlayerNameSize * 100f}%><color={GetColorHexString(0, 100, percentage)}>{percentage:N0}%</color></size></color>";
                     }
 
