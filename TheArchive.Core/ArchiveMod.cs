@@ -38,7 +38,7 @@ namespace TheArchive
 
         public const string MTFO_GUID = "com.dak.MTFO";
 
-        public const string ARCHIVE_CORE_FEATUREGROUP = "Archive Core";
+        public const string ARCHIVE_CORE_FEATURE_GROUP = "Archive Core";
 
         public static readonly string CORE_PATH = Assembly.GetAssembly(typeof(ArchiveMod)).Location;
 
