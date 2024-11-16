@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using TheArchive.Core.Bootstrap;
 using TheArchive.Interfaces;
 
 namespace TheArchive.Loader
@@ -88,8 +89,9 @@ namespace TheArchive.Loader
         public static bool IsModInstalled(string guid)
         {
             BepInEx.Unity.IL2CPP.IL2CPPChainloader.Instance.Plugins.TryGetValue(guid, out var plugin);
+            ArchiveModuleChainloader.Instance.Modules.TryGetValue(guid, out var module);
 
-            return plugin != null;
+            return plugin != null || module != null;
         }
 
         public static class ClassInjector
