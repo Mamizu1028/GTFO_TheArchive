@@ -276,7 +276,7 @@ namespace TheArchive.Features.Accessibility
 
                     var sentryArch = string.Empty;
                     var canShowPercentage = PlayerBackpackManager.TryGetBackpack(snetPlayer, out var backpack);
-                    var ammo = backpack.AmmoStorage.GetInventorySlotAmmo(__instance.ItemDataBlock.inventorySlot);
+                    var ammo = backpack?.AmmoStorage?.GetInventorySlotAmmo(__instance.ItemDataBlock.inventorySlot);
 
                     if (Settings.ShowSentryArchetype)
                     {
