@@ -111,11 +111,6 @@ namespace TheArchive.Core.Localization
             _localizationServices.Add(service);
         }
 
-        public static void RegisterInLocalizaion(Type type)
-        {
-            _typesToCheck.Add(type);
-        }
-
         public static void Init()
         {
             string dir = Path.Combine(Path.GetDirectoryName(ArchiveMod.CORE_PATH), "Localization");
@@ -218,8 +213,6 @@ namespace TheArchive.Core.Localization
         private static HashSet<FeatureLocalizationService> _localizationServices = new();
 
         private static Dictionary<uint, Dictionary<Language, string>> _texts = new();
-
-        private static HashSet<Type> _typesToCheck = new();
 
         private static Dictionary<string, Dictionary<Language, Dictionary<string, string>>> _enumTexts = new();
     }

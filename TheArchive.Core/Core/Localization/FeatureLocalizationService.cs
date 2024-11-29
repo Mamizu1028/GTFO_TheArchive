@@ -185,6 +185,16 @@ namespace TheArchive.Core.Localization
             }
         }
 
+        public void RemoveTextSetter(ILocalizedTextSetter textSetter)
+        {
+            _textSetters.Remove(textSetter);
+        }
+
+        public void RemoveTextUpdater(ILocalizedTextUpdater textUpdater)
+        {
+            _textUpdaters.Remove(textUpdater);
+        }
+
         private FeatureLocalizationData _localizationData { get; set; }
 
         private Dictionary<uint, Dictionary<Language, string>> _extraTexts { get; set; } = new();

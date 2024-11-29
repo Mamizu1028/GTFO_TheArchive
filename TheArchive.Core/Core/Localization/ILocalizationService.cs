@@ -14,8 +14,12 @@ namespace TheArchive.Core.Localization
 
         void AddTextSetter(ILocalizedTextSetter textSetter, uint textId);
 
+        void RemoveTextSetter(ILocalizedTextSetter textUpdater);
+
         void SetTextSetter(ILocalizedTextSetter textSetter, uint textId);
 
         void AddTextUpdater(ILocalizedTextUpdater textUpdater);
+
+        void RemoveTextUpdater(ILocalizedTextUpdater textUpdater);
     }
 }
