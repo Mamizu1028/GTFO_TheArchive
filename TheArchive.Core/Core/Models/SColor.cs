@@ -1,4 +1,6 @@
-﻿namespace TheArchive.Core.Models
+﻿using UnityEngine;
+
+namespace TheArchive.Core.Models
 {
     public struct SColor
     {
@@ -41,6 +43,16 @@
                 G = this.G,
                 B = this.B,
             };
+        }
+
+        public static implicit operator Color(SColor scolor)
+        {
+            return new Color(scolor.R, scolor.G, scolor.B, scolor.A);
+        }
+
+        public static implicit operator SColor(Color color)
+        {
+            return new SColor(color.r, color.g, color.b, color.a);
         }
     }
 }

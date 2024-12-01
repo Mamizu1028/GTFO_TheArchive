@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using BepInEx;
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using TheArchive.Core.Attributes;
 using TheArchive.Interfaces;
-using TheArchive.Utilities;
-using Version = SemanticVersioning.Version;
 
 namespace TheArchive.Core.Bootstrap;
 
@@ -93,9 +92,6 @@ public class ArchiveModuleChainloader
 
     public List<string> DependencyErrors { get; } = new List<string>();
 
-
-    public event Action<ModuleInfo, Assembly, IArchiveModule> ModuleLoad;
-
     public event Action<ModuleInfo> ModuleLoaded;
 
     public event Action Finished;
@@ -125,89 +121,76 @@ public class ArchiveModuleChainloader
 
     protected IList<ModuleInfo> ModifyLoadOrder(IList<ModuleInfo> modules)
     {
-        SortedDictionary<string, IEnumerable<string>> dependencyDict = new SortedDictionary<string, IEnumerable<string>>(StringComparer.InvariantCultureIgnoreCase);
-        Dictionary<string, ModuleInfo> modulesByGuid = new Dictionary<string, ModuleInfo>();
+        var dependencyDict = new SortedDictionary<string, IEnumerable<string>>(StringComparer.InvariantCultureIgnoreCase);
+        var modulesByGuid = new Dictionary<string, ModuleInfo>();
+
         foreach (IGrouping<string, ModuleInfo> ModuleInfoGroup in from info in modules
                                                                   group info by info.Metadata.GUID)
         {
             if (Modules.TryGetValue(ModuleInfoGroup.Key, out var loadedModule))
             {
                 Logger.Warning($"Skipping [{ModuleInfoGroup.Key}] because a module with a similar GUID ([{loadedModule}]) has been already loaded.");
+                continue;
             }
-            else
+            ModuleInfo loadedVersion = null;
+            foreach (ModuleInfo moduleInfo in ModuleInfoGroup.OrderByDescending((x) => x.Metadata.Version))
             {
-                ModuleInfo loadedVersion = null;
-                foreach (ModuleInfo ModuleInfo in ModuleInfoGroup.OrderByDescending((x) => x.Metadata.Version))
+                if (loadedVersion != null)
                 {
-                    if (loadedVersion != null)
-                    {
-                        Logger.Warning($"Skip [{ModuleInfo}] because a newer version exists ({loadedVersion})");
-                    }
-                    else
-                    {
-                        loadedVersion = ModuleInfo;
-                        dependencyDict[ModuleInfo.Metadata.GUID] = ModuleInfo.Dependencies.Select((d) => d.DependencyGUID);
-                        modulesByGuid[ModuleInfo.Metadata.GUID] = ModuleInfo;
-                    }
+                    Logger.Warning($"Skip [{moduleInfo}] because a newer version exists ({loadedVersion})");
+                    continue;
                 }
+
+                loadedVersion = moduleInfo;
+                dependencyDict[moduleInfo.Metadata.GUID] = moduleInfo.Dependencies.Select((d) => d.DependencyGUID);
+                modulesByGuid[moduleInfo.Metadata.GUID] = moduleInfo;
             }
         }
-        Func<ArchiveIncompatibility, bool> funcE = null;
-        Func<string, bool> funcE2 = null;
-        Func<string, bool> funcE3 = null;
-        foreach (ModuleInfo ModuleInfo2 in modulesByGuid.Values.ToList())
+
+
+        foreach (var moduleInfo in modulesByGuid.Values.ToList())
         {
-            IEnumerable<ArchiveIncompatibility> incompatibilities = ModuleInfo2.Incompatibilities;
-            Func<ArchiveIncompatibility, bool> func = null;
-            if ((func = funcE) == null)
-            {
-                func = (incompatibility) => modulesByGuid.ContainsKey(incompatibility.IncompatibilityGUID) || Modules.ContainsKey(incompatibility.IncompatibilityGUID)
+            if (moduleInfo.Incompatibilities.Any(incompatibility => modulesByGuid.ContainsKey(incompatibility.IncompatibilityGUID)
+            || Modules.ContainsKey(incompatibility.IncompatibilityGUID)
 #if BepInEx
                  || BepInEx.Unity.IL2CPP.IL2CPPChainloader.Instance.Plugins.ContainsKey(incompatibility.IncompatibilityGUID)
 #endif
-                ;
-            }
-            if (incompatibilities.Any(func))
+            ))
             {
-                modulesByGuid.Remove(ModuleInfo2.Metadata.GUID);
-                dependencyDict.Remove(ModuleInfo2.Metadata.GUID);
-                IEnumerable<string> enumerable = ModuleInfo2.Incompatibilities.Select((x) => x.IncompatibilityGUID);
-                Func<string, bool> func2 = null;
-                if ((func2 = funcE2) == null)
-                {
-                    func2 = funcE2 = (x) => modulesByGuid.ContainsKey(x);
-                }
-                IEnumerable<string> enumerable2 = enumerable.Where(func2);
-                IEnumerable<string> enumerable3 = ModuleInfo2.Incompatibilities.Select((x) => x.IncompatibilityGUID);
-                Func<string, bool> func3 = null;
-                if ((func3 = funcE3) == null)
-                {
-                    func3 = funcE3 = (x) => Modules.ContainsKey(x);
-                }
-                IEnumerable<string> incompatibleModulesExisting = enumerable3.Where(func3);
-                string[] incompatibleModules = enumerable2.Concat(incompatibleModulesExisting).ToArray();
-                string message = string.Format("Could not load [{0}] because it is incompatible with: {1}", ModuleInfo2, string.Join(", ", incompatibleModules));
+                modulesByGuid.Remove(moduleInfo.Metadata.GUID);
+                dependencyDict.Remove(moduleInfo.Metadata.GUID);
+
+                var incompatiblePluginsNew = moduleInfo.Incompatibilities.Select(x => x.IncompatibilityGUID)
+                                                       .Where(x => modulesByGuid.ContainsKey(x));
+                var incompatiblePluginsExisting = moduleInfo.Incompatibilities.Select(x => x.IncompatibilityGUID)
+                                                            .Where(x => Modules.ContainsKey(x));
+                var incompatiblePlugins = incompatiblePluginsNew.Concat(incompatiblePluginsExisting).ToArray();
+                var message =
+                    $@"Could not load [{moduleInfo}] because it is incompatible with: {string.Join(", ", incompatiblePlugins)}";
                 DependencyErrors.Add(message);
                 Logger.Error(message);
             }
-            else if (ModuleTargetsWrongTheArchive(ModuleInfo2))
+            else if (ModuleTargetsWrongTheArchive(moduleInfo))
             {
-                string message2 = string.Format("Module [{0}] targets a wrong version of TheArchive ({1}) and might not work until you update", ModuleInfo2, ModuleInfo2.TargettedTheArchiveVersion);
-                DependencyErrors.Add(message2);
-                Logger.Warning(message2);
+                var message =
+                    $@"Module [{moduleInfo}] targets a wrong version of BepInEx ({moduleInfo.TargettedTheArchiveVersion}) and might not work until you update";
+                DependencyErrors.Add(message);
+                Logger.Warning(message);
             }
         }
-        var emptyDependencies = Array.Empty<string>();
-        return (from x in Utils.TopologicalSort(dependencyDict.Keys, delegate (string x)
-        {
-            if (!dependencyDict.TryGetValue(x, out var deps))
-            {
-                return emptyDependencies;
-            }
-            return deps;
-        }).ToList().Where(new Func<string, bool>(modulesByGuid.ContainsKey))
-                select modulesByGuid[x]).ToList();
+
+
+        var emptyDependencies = new string[0];
+
+        var sortedModules = Utility.TopologicalSort(dependencyDict.Keys,
+                                                    x =>
+                                                        dependencyDict.TryGetValue(x, out var deps)
+                                                            ? deps
+                                                            : emptyDependencies).ToList();
+
+        return sortedModules.Where(modulesByGuid.ContainsKey).Select(x => modulesByGuid[x]).ToList();
     }
+
 
     public void Execute()
     {
@@ -216,15 +199,11 @@ public class ArchiveModuleChainloader
             IList<ModuleInfo> modules = DiscoverModules();
             Logger.Info($"{modules.Count} module{(modules.Count == 1 ? "" : "s")} to load");
             LoadModules(modules);
-            Action finished = Finished;
-            if (finished != null)
-            {
-                finished();
-            }
+            Finished?.Invoke();
         }
         catch (Exception ex)
         {
-            Logger.Error("Error occurred loading modules: ");
+            Logger.Error("Error occurred loading modules:");
             Logger.Exception(ex);
         }
         Logger.Notice("Chainloader startup complete");
@@ -232,23 +211,26 @@ public class ArchiveModuleChainloader
 
     private IList<ModuleInfo> LoadModules(IList<ModuleInfo> modules)
     {
-        IEnumerable<ModuleInfo> enumerable = ModifyLoadOrder(modules);
-        HashSet<string> invalidModules = new HashSet<string>();
-        Dictionary<string, Version> processedModules = new Dictionary<string, Version>();
-        Dictionary<string, Assembly> loadedAssemblies = new Dictionary<string, Assembly>();
-        List<ModuleInfo> loadedModules = new List<ModuleInfo>();
-        foreach (ModuleInfo module in enumerable)
+        var sortedModules = ModifyLoadOrder(modules);
+        var invalidModules = new HashSet<string>();
+        var processedModules = new Dictionary<string, SemanticVersioning.Version>();
+        var loadedAssemblies = new Dictionary<string, Assembly>();
+        var loadedModules = new List<ModuleInfo>();
+        foreach (ModuleInfo module in sortedModules)
         {
-            bool dependsOnInvalidModule = false;
-            List<ArchiveDependency> missingDependencies = new List<ArchiveDependency>();
-            foreach (ArchiveDependency dependency in module.Dependencies)
+            var dependsOnInvalidModule = false;
+            var missingDependencies = new List<ArchiveDependency>();
+            foreach (var dependency in module.Dependencies)
             {
+                static bool IsHardDependency(ArchiveDependency dep) =>
+                    (dep.Flags & ArchiveDependency.DependencyFlags.HardDependency) != 0;
+
                 bool dependencyExists = processedModules.TryGetValue(dependency.DependencyGUID, out var moduleVersion);
                 if (!dependencyExists)
                 {
-                    dependencyExists = Modules.TryGetValue(dependency.DependencyGUID, out var ModuleInfo);
-                    moduleVersion = ModuleInfo != null ? ModuleInfo.Metadata.Version : null;
-                    if (!dependencyExists || moduleVersion == null)
+                    dependencyExists = Modules.TryGetValue(dependency.DependencyGUID, out var moduleInfo);
+                    moduleVersion = moduleInfo != null ? moduleInfo.Metadata.Version : null;
+                    if (!dependencyExists)
                     {
 #if BepInEx
                         dependencyExists = BepInEx.Unity.IL2CPP.IL2CPPChainloader.Instance.Plugins.TryGetValue(dependency.DependencyGUID, out var pluginInfo);
@@ -259,63 +241,53 @@ public class ArchiveModuleChainloader
                 if (!dependencyExists || dependency.VersionRange != null && !dependency.VersionRange.IsSatisfied(moduleVersion, false))
                 {
                     if (IsHardDependency(dependency))
-                    {
                         missingDependencies.Add(dependency);
-                    }
+                    continue;
                 }
-                else if (invalidModules.Contains(dependency.DependencyGUID) && IsHardDependency(dependency))
+                if (invalidModules.Contains(dependency.DependencyGUID) && IsHardDependency(dependency))
                 {
                     dependsOnInvalidModule = true;
                     break;
                 }
             }
+
             processedModules.Add(module.Metadata.GUID, module.Metadata.Version);
+
             if (dependsOnInvalidModule)
             {
-                string message = string.Format("Skipping [{0}] because it has a dependency that was not loaded. See previous errors for details.", module);
+                string message = $"Skipping [{module}] because it has a dependency that was not loaded. See previous errors for details.";
                 DependencyErrors.Add(message);
                 Logger.Warning(message);
             }
             else if (missingDependencies.Count != 0)
             {
-                string message2 = string.Format("Could not load [{0}] because it has missing dependencies: {1}", module, string.Join(", ", missingDependencies.Select(delegate (ArchiveDependency s)
-                {
-                    if (!(s.VersionRange == null))
-                    {
-                        return string.Format("{0} ({1})", s.DependencyGUID, s.VersionRange);
-                    }
-                    return s.DependencyGUID;
-                }).ToArray()));
-                DependencyErrors.Add(message2);
-                Logger.Error(message2);
+                var message = $@"Could not load [{module}] because it has missing dependencies: {
+                    string.Join(", ", missingDependencies.Select(s => s.VersionRange == null ? s.DependencyGUID : $"{s.DependencyGUID} ({s.VersionRange})").ToArray())
+                    }";
+                DependencyErrors.Add(message);
+                Logger.Error(message);
                 invalidModules.Add(module.Metadata.GUID);
+                continue;
             }
-            else
+            try
             {
-                try
+                if (!loadedAssemblies.TryGetValue(module.Location, out var ass))
                 {
-                    if (!loadedAssemblies.TryGetValue(module.Location, out var ass))
-                    {
-                        ass = loadedAssemblies[module.Location] = Assembly.LoadFrom(module.Location);
-                    }
-                    Modules[module.Metadata.GUID] = module;
-                    TryRunModuleCtor(module, ass);
-                    module.Instance = LoadModule(module, ass);
-                    loadedModules.Add(module);
-                    Action<ModuleInfo> moduleLoaded = ModuleLoaded;
-                    if (moduleLoaded != null)
-                    {
-                        moduleLoaded(module);
-                    }
+                    ass = loadedAssemblies[module.Location] = Assembly.LoadFrom(module.Location);
                 }
-                catch (Exception ex)
-                {
-                    invalidModules.Add(module.Metadata.GUID);
-                    Modules.Remove(module.Metadata.GUID);
+                Modules[module.Metadata.GUID] = module;
+                TryRunModuleCtor(module, ass);
+                module.Instance = LoadModule(module, ass);
+                loadedModules.Add(module);
+                ModuleLoaded?.Invoke(module);
+            }
+            catch (Exception ex)
+            {
+                invalidModules.Add(module.Metadata.GUID);
+                Modules.Remove(module.Metadata.GUID);
 
-                    Logger.Error($"Error loading [{module}]:");
-                    Logger.Exception(ex);
-                }
+                Logger.Error($"Error loading [{module}]:");
+                Logger.Exception(ex);
             }
         }
         return loadedModules;
@@ -348,8 +320,6 @@ public class ArchiveModuleChainloader
     {
         return ArchiveMod.CreateAndInitModule(moduleAssembly.GetType(moduleInfo.TypeName));
     }
-
-    internal static bool IsHardDependency(ArchiveDependency dep) => (dep.Flags & ArchiveDependency.DependencyFlags.HardDependency) > 0;
 
     protected static readonly string CurrentAssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 

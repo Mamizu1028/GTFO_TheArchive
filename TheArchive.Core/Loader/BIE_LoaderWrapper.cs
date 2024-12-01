@@ -88,10 +88,10 @@ namespace TheArchive.Loader
 
         public static bool IsModInstalled(string guid)
         {
-            BepInEx.Unity.IL2CPP.IL2CPPChainloader.Instance.Plugins.TryGetValue(guid, out var plugin);
-            ArchiveModuleChainloader.Instance.Modules.TryGetValue(guid, out var module);
+            bool flag = BepInEx.Unity.IL2CPP.IL2CPPChainloader.Instance.Plugins.TryGetValue(guid, out var plugin);
+            flag |= ArchiveModuleChainloader.Instance?.Modules.TryGetValue(guid, out var module) ?? false;
 
-            return plugin != null || module != null;
+            return flag;
         }
 
         public static class ClassInjector
