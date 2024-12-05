@@ -9,7 +9,7 @@ public class CustomSetting<T> : ICustomSetting where T : new()
 {
     internal string FullPath { get; private set; }
 
-    internal string FilePath { get; private set; }
+    internal string FileName { get; private set; }
 
     public T Value { get; set; }
 
@@ -23,8 +23,8 @@ public class CustomSetting<T> : ICustomSetting where T : new()
 
     public CustomSetting(string path, T defaultValue, Action<T> afterLoad = null, LoadingTime loadingTime = LoadingTime.Immediately, bool saveOnQuit = true)
     {
-        FilePath = path;
-        FullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "Settings", $"{FilePath}.json");
+        FileName = path;
+        FullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "Settings", $"{FileName}.json");
         Value = defaultValue;
         AfterLoad = afterLoad;
         SaveOnQuit = saveOnQuit;
@@ -40,8 +40,7 @@ public class CustomSetting<T> : ICustomSetting where T : new()
         {
             Value = JsonConvert.DeserializeObject<T>(File.ReadAllText(FullPath), ArchiveMod.JsonSerializerSettings);
         }
-        Action<T> afterLoad = AfterLoad;
-        if (afterLoad != null) afterLoad(Value);
+        AfterLoad?.Invoke(Value);
     }
 
     public void Save()
