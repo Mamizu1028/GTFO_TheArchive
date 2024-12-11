@@ -5,7 +5,7 @@ using TheArchive.Utilities;
 
 namespace TheArchive.Core.ModulesAPI;
 
-public class CustomSetting<T> : ICustomSetting where T : new()
+public class CustomSettings<T> : ICustomSetting where T : new()
 {
     internal string FullPath { get; private set; }
 
@@ -21,7 +21,9 @@ public class CustomSetting<T> : ICustomSetting where T : new()
 
     LoadingTime ICustomSetting.LoadingTime => LoadingTime;
 
-    public CustomSetting(string path, T defaultValue, Action<T> afterLoad = null, LoadingTime loadingTime = LoadingTime.Immediately, bool saveOnQuit = true)
+    public bool IsLoaded { get; private set; }
+
+    public CustomSettings(string path, T defaultValue, Action<T> afterLoad = null, LoadingTime loadingTime = LoadingTime.Immediately, bool saveOnQuit = true)
     {
         FileName = path;
         FullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "Settings", $"{FileName}.json");
@@ -29,7 +31,7 @@ public class CustomSetting<T> : ICustomSetting where T : new()
         AfterLoad = afterLoad;
         SaveOnQuit = saveOnQuit;
         LoadingTime = loadingTime;
-        CustomSettingManager.RegisterModuleSetting(this);
+        CustomSettingsManager.RegisterModuleSetting(this);
     }
 
     public void Load()
@@ -41,10 +43,14 @@ public class CustomSetting<T> : ICustomSetting where T : new()
             Value = JsonConvert.DeserializeObject<T>(File.ReadAllText(FullPath), ArchiveMod.JsonSerializerSettings);
         }
         AfterLoad?.Invoke(Value);
+
+        IsLoaded = true;
     }
 
-    public void Save()
+    public void Save(bool isQuit = false)
     {
+        if (!IsLoaded && isQuit)
+            return;
         var root = Path.GetDirectoryName(FullPath);
         if (!Directory.Exists(root)) Directory.CreateDirectory(root);
         string json = string.Empty;
@@ -59,7 +65,7 @@ public class CustomSetting<T> : ICustomSetting where T : new()
 public interface ICustomSetting
 {
     void Load();
-    void Save();
+    void Save(bool isQuit);
     LoadingTime LoadingTime { get; }
     bool SaveOnQuit { get; }
 }

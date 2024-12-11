@@ -22,7 +22,7 @@ public static class TypeLoader
 
     public static AssemblyDefinition CecilResolveOnFailure(object sender, AssemblyNameReference reference)
     {
-        if (!Utils.TryParseAssemblyName(reference.FullName, out var name))
+        if (!TryParseAssemblyName(reference.FullName, out var name))
         {
             return null;
         }
@@ -40,7 +40,7 @@ public static class TypeLoader
             {
                 Logger.Debug($"Unable to resolve cecil search directory '{dir}'");
             }
-            else if (Utils.TryResolveDllAssembly(name, dir, ReaderParameters, out var assembly))
+            else if (TryResolveDllAssembly(name, dir, ReaderParameters, out var assembly))
             {
                 return assembly;
             }
@@ -227,6 +227,93 @@ public static class TypeLoader
             sb.AppendLine();
         }
         return sb.ToString();
+    }
+
+    public static bool TryResolveDllAssembly<T>(AssemblyName assemblyName, string directory, Func<string, T> loader, out T assembly) where T : class
+    {
+        assembly = default(T);
+        List<string> potentialDirectories = new List<string> { directory };
+        if (!Directory.Exists(directory))
+        {
+            return false;
+        }
+        potentialDirectories.AddRange(Directory.GetDirectories(directory, "*", SearchOption.AllDirectories));
+        foreach (string subDirectory in potentialDirectories)
+        {
+            foreach (string potentialPath in new string[]
+            {
+                    assemblyName.Name + ".dll",
+                    assemblyName.Name + ".exe"
+            })
+            {
+                string path = Path.Combine(subDirectory, potentialPath);
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        assembly = loader(path);
+                    }
+                    catch (Exception)
+                    {
+                        goto IL_A5;
+                    }
+                    return true;
+                }
+            IL_A5:;
+            }
+        }
+        return false;
+    }
+
+    public static bool IsSubtypeOf(this TypeDefinition self, Type td)
+    {
+        if (self.FullName == td.FullName)
+        {
+            return true;
+        }
+        if (self.FullName != typeof(object).FullName)
+        {
+            TypeReference baseType = self.BaseType;
+            bool? flag;
+            if (baseType == null)
+            {
+                flag = null;
+            }
+            else
+            {
+                TypeDefinition typeDefinition = baseType.Resolve();
+                flag = ((typeDefinition != null) ? new bool?(typeDefinition.IsSubtypeOf(td)) : null);
+            }
+            bool? flag2 = flag;
+            return flag2.GetValueOrDefault();
+        }
+        return false;
+    }
+
+    public static bool TryResolveDllAssembly(AssemblyName assemblyName, string directory, out Assembly assembly)
+    {
+        return TryResolveDllAssembly<Assembly>(assemblyName, directory, new Func<string, Assembly>(Assembly.LoadFrom), out assembly);
+    }
+
+    public static bool TryResolveDllAssembly(AssemblyName assemblyName, string directory, ReaderParameters readerParameters, out AssemblyDefinition assembly)
+    {
+        return TryResolveDllAssembly<AssemblyDefinition>(assemblyName, directory, (string s) => AssemblyDefinition.ReadAssembly(s, readerParameters), out assembly);
+    }
+
+    public static bool TryParseAssemblyName(string fullName, out AssemblyName assemblyName)
+    {
+        bool flag;
+        try
+        {
+            assemblyName = new AssemblyName(fullName);
+            flag = true;
+        }
+        catch (Exception)
+        {
+            assemblyName = null;
+            flag = false;
+        }
+        return flag;
     }
 
     public static readonly DefaultAssemblyResolver CecilResolver = new DefaultAssemblyResolver();

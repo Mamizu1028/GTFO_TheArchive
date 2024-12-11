@@ -5,9 +5,9 @@ using TheArchive.Loader;
 
 namespace TheArchive.Core.ModulesAPI;
 
-internal static class CustomSettingManager
+internal static class CustomSettingsManager
 {
-    private static readonly IArchiveLogger _logger = LoaderWrapper.CreateArSubLoggerInstance(nameof(CustomSettingManager), ConsoleColor.DarkRed);
+    private static readonly IArchiveLogger _logger = LoaderWrapper.CreateArSubLoggerInstance(nameof(CustomSettingsManager), ConsoleColor.DarkRed);
 
     public static void RegisterModuleSetting(ICustomSetting setting)
     {
@@ -33,7 +33,7 @@ internal static class CustomSettingManager
             try
             {
                 if (setting.SaveOnQuit)
-                    setting.Save();
+                    setting.Save(true);
             }
             catch (Exception ex)
             {

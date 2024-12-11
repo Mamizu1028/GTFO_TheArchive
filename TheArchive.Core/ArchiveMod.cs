@@ -228,7 +228,7 @@ namespace TheArchive
         internal static void OnApplicationQuit()
         {
             FeatureManager.Instance.OnApplicationQuit();
-            CustomSettingManager.OnApplicationQuit();
+            CustomSettingsManager.OnApplicationQuit();
         }
 
         private static void LoadConfig()
@@ -401,7 +401,7 @@ namespace TheArchive
             }
 
             FeatureManager.Instance.OnDatablocksReady();
-            CustomSettingManager.OnGameDataInited();
+            CustomSettingsManager.OnGameDataInited();
 
             DataBlocksReady?.Invoke();
         }
