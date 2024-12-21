@@ -1,4 +1,5 @@
 ﻿using Enemies;
+using GameData;
 using Player;
 using TheArchive.Core.Attributes;
 using TheArchive.Core.FeaturesAPI;
@@ -26,12 +27,13 @@ namespace TheArchive.Features.Fixes
             }
         }
 
-        [ArchivePatch(typeof(EnemyAgent), nameof(EnemyAgent.Setup))]
-        private class EnemyAgent__Setup__Patch
+        [ArchivePatch(typeof(EnemyPrefabManager), nameof(EnemyPrefabManager.GenerateEnemy))]
+        private class EnemyPrefabManager__GenerateEnemy__Patch
         {
-            private static void Postfix(EnemyAgent __instance)
+            private static void Postfix(EnemyPrefabManager __instance, EnemyDataBlock data)
             {
-                foreach (var collider in __instance.GetComponentsInChildren<Collider>(true))
+                var prefab = EnemyPrefabManager.Current.m_enemyPrefabs[data.persistentID];
+                foreach (var collider in prefab.GetComponentsInChildren<Collider>(true))
                 {
                     var pingTarget = collider.GetComponent<PlayerPingTarget>();
                     if (pingTarget != null)
@@ -41,7 +43,6 @@ namespace TheArchive.Features.Fixes
                 }
             }
         }
-
 
         private static LocalPlayerAgent s_LocalPlayerAgent;
         private static PlayerPingTarget s_tempPlayerPingTarget;
