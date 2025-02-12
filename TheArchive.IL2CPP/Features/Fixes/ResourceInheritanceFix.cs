@@ -10,6 +10,8 @@ namespace TheArchive.Features.Fixes
     {
         public override string Name => "Resource Inheritance Fix";
 
+        public override string Description => "Fix the issue of resource loss for a player who exits the game during play by transferring their resources to the next player who joins the game.";
+
         public override FeatureGroup Group => FeatureGroups.Fixes;
 
 

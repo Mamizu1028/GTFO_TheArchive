@@ -1,10 +1,10 @@
 {
   "Internal": {
     "FeatureSettingsTexts": {
-      "TheArchive.Features.Fixes.ResourceInheritanceFix.Name": {
+      "TheArchive.Features.Fixes.WeaponRayUpdateFix.Name": {
         "FName": {
-          "English": "Resource Inheritance Fix",
-          "Chinese": "资源继承修复",
+          "English": "Weapon Ray Update Fix",
+          "Chinese": "枪械开火朝向修复",
           "French": null,
           "Italian": null,
           "German": null,
@@ -16,10 +16,10 @@
           "Korean": null
         }
       },
-      "TheArchive.Features.Fixes.ResourceInheritanceFix.Description": {
+      "TheArchive.Features.Fixes.WeaponRayUpdateFix.Description": {
         "FDescription": {
-          "English": "Fix the issue of resource loss for a player who exits the game during play by transferring their resources to the next player who joins the game.",
-          "Chinese": "修正在游戏进行中有玩家退出后该玩家身上资源丢失的问题，将身上资源转移给下一个加入游戏的玩家。",
+          "English": "Before each single shot of the firearm, update the shooting direction to ensure it aligns with the camera's orientation, avoiding discrepancies between the actual firing direction and the crosshair.",
+          "Chinese": "在每次枪械单发开火前更新射击方向，确保方向为摄像机朝向，避免出现实际开火方向与准心不符的问题。",
           "French": null,
           "Italian": null,
           "German": null,

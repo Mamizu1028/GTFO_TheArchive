@@ -7,9 +7,9 @@ namespace TheArchive.Features.Fixes
     [EnableFeatureByDefault]
     public class WeaponRayUpdateFix : Feature
     {
-        public override string Name => "枪械射击方向修复";
+        public override string Name => "Weapon Ray Update Fix";
 
-        public override string Description => "在每次枪械单发开火前更新射击方向，确保方向为摄像机朝向，避免出现实际开火方向与准心不符的问题";
+        public override string Description => "Before each single shot of the firearm, update the shooting direction to ensure it aligns with the camera's orientation, avoiding discrepancies between the actual firing direction and the crosshair.";
 
         public override FeatureGroup Group => FeatureGroups.Fixes;
 

@@ -1,10 +1,10 @@
 {
   "Internal": {
     "FeatureSettingsTexts": {
-      "TheArchive.Features.Fixes.ResourceInheritanceFix.Name": {
+      "TheArchive.Features.Fixes.EnemyDamageSync.Name": {
         "FName": {
-          "English": "Resource Inheritance Fix",
-          "Chinese": "资源继承修复",
+          "English": "Enemy Health Sync",
+          "Chinese": "敌人生命值同步",
           "French": null,
           "Italian": null,
           "German": null,
@@ -16,10 +16,10 @@
           "Korean": null
         }
       },
-      "TheArchive.Features.Fixes.ResourceInheritanceFix.Description": {
+      "TheArchive.Features.Fixes.EnemyDamageSync.Description": {
         "FDescription": {
-          "English": "Fix the issue of resource loss for a player who exits the game during play by transferring their resources to the next player who joins the game.",
-          "Chinese": "修正在游戏进行中有玩家退出后该玩家身上资源丢失的问题，将身上资源转移给下一个加入游戏的玩家。",
+          "English": "When enabled as the host, the enemy's health will be synchronized to the client to correct the issue of incorrect kill indicator on the client.",
+          "Chinese": "在作为主机时启用后会将敌人生命值同步至子机，用于修正子机击杀标显示不正确的问题。",
           "French": null,
           "Italian": null,
           "German": null,

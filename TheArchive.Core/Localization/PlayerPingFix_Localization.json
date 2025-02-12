@@ -1,10 +1,10 @@
 {
   "Internal": {
     "FeatureSettingsTexts": {
-      "TheArchive.Features.Fixes.ResourceInheritanceFix.Name": {
+      "TheArchive.Features.Fixes.PlayerPingFix.Name": {
         "FName": {
-          "English": "Resource Inheritance Fix",
-          "Chinese": "资源继承修复",
+          "English": "Player Ping Fix",
+          "Chinese": "玩家标记修复",
           "French": null,
           "Italian": null,
           "German": null,
@@ -16,10 +16,10 @@
           "Korean": null
         }
       },
-      "TheArchive.Features.Fixes.ResourceInheritanceFix.Description": {
+      "TheArchive.Features.Fixes.PlayerPingFix.Description": {
         "FDescription": {
-          "English": "Fix the issue of resource loss for a player who exits the game during play by transferring their resources to the next player who joins the game.",
-          "Chinese": "修正在游戏进行中有玩家退出后该玩家身上资源丢失的问题，将身上资源转移给下一个加入游戏的玩家。",
+          "English": "Allow players to freely mark any items.",
+          "Chinese": "允许玩家随意标记任意物品。",
           "French": null,
           "Italian": null,
           "German": null,

@@ -10,9 +10,9 @@ namespace TheArchive.Features.Fixes
     [EnableFeatureByDefault]
     public class PlayerPingFix : Feature
     {
-        public override string Name => "玩家标记修复";
+        public override string Name => "Player Ping Fix";
 
-        public override string Description => "允许玩家进行随意标记和标记敌人";
+        public override string Description => "Allows players to mark things at will.";
 
         public override bool RequiresRestart => true;
 
@@ -70,7 +70,7 @@ namespace TheArchive.Features.Fixes
                     if (s_tempPlayerPingTarget == null)
                     {
                         s_tempPlayerPingTarget = raycastHit.collider.gameObject.AddComponent<PlayerPingTarget>();
-                        s_tempPlayerPingTarget.m_pingTargetStyle = eNavMarkerStyle.PlayerPingLookat;
+                        s_tempPlayerPingTarget.m_pingTargetStyle = eNavMarkerStyle.LocationBeacon;
                     }
                     else if (!s_tempPlayerPingTarget.enabled)
                     {

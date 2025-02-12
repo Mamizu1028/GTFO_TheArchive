@@ -7,9 +7,9 @@ namespace TheArchive.Features.Fixes
     [EnableFeatureByDefault]
     public class EnemyDamageSync : Feature
     {
-        public override string Name => "敌人生命值同步";
+        public override string Name => "Enemy Health Sync";
 
-        public override string Description => "使客机可以获取敌人的实时生命值。\n在作为主机时启用后会将敌人生命值同步至客机。\n该功能应保持启用。";
+        public override string Description => "When enabled as the host, the enemy's health will be synchronized to the client to correct the issue of incorrect kill indicator on the client.";
 
         public override FeatureGroup Group => FeatureGroups.Fixes;
 
