@@ -1214,9 +1214,9 @@ namespace TheArchive.Core.FeaturesAPI
             FeatureManager.Instance.DisableFeature(_feature, setConfig: false);
         }
 
-        [Flags]
         internal enum InternalDisabledReason
         {
+            None,
             RundownConstraintMismatch,
             BuildConstraintMismatch,
             MainInitMethodFailed,

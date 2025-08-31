@@ -590,6 +590,8 @@ namespace TheArchive.Features.Security
                 }
                 entry.TimestampLast = DateTime.UtcNow.Ticks;
                 MarkSettingsAsDirty(Settings);
+
+                SteamFriends.SetPlayedWith(player.PlatformData.Cast<SNet_SteamPlayerData>().SteamID);
                 return;
             }
 

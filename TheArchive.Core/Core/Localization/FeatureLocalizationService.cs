@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TheArchive.Core.FeaturesAPI;
 
 namespace TheArchive.Core.Localization
@@ -124,6 +125,30 @@ namespace TheArchive.Core.Localization
 
         public string Get<T>(T value) where T : Enum
         {
+            Type type = typeof(T);
+            if (type.IsEnum)
+            {
+                if (!TryGetFSEnumText(type, out var enumTexts) || !enumTexts.TryGetValue(value.ToString(), out var text))
+                {
+                    return value.ToString();
+                }
+                if (typeof(T).GetCustomAttribute<FlagsAttribute>() == null)
+                {
+                    return text;
+                }
+                List<string> result = new();
+                foreach (var v in Enum.GetValues(type))
+                {
+                    if (!value.HasFlag((T)v))
+                        continue;
+                    if (!enumTexts.TryGetValue(v.ToString(), out var tvalue))
+                    {
+                        return value.ToString();
+                    }
+                    result.Add(tvalue);
+                }
+                return string.Join(", ", result);
+            }
             return Get(typeof(T), value);
         }
 
