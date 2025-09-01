@@ -30,8 +30,8 @@
 
 	<!-- Other Dependencies -->
 	<ItemGroup>
-		<Reference Include="$(PluginsFolder)/GTFO-API.dll" Private="false" />
-		<Reference Include="$(PluginsFolder)/**/UnityExplorer.BIE.IL2CPP.CoreCLR.dll" Private="false" />
+		<Reference Include="$(PluginsFolder)/**/GTFO-API.dll" Private="false" />
+		<Reference Include="$(PluginsFolder)/**/UnityExplorer.BIE.Unity.IL2CPP.CoreCLR.dll" Private="false" />
 		<Reference Include="$(PluginsFolder)/**/Clonesoft.Json.dll" Private="false" />
 	</ItemGroup>
 
