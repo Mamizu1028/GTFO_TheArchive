@@ -12,6 +12,7 @@
 
 # Special Stuff
 out/*
+output/*
 
 _localKeepForLater/*
 
