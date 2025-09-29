@@ -202,8 +202,8 @@ public class SentryMarkerTweaks : Feature
             
             if (Settings.ShowSentryAmmoPercentage)
             {
-                var percentage = Mathf.CeilToInt(__instance.Ammo / __instance.AmmoMaxCap * 100f);
-                sentryArch = $"{sentryArch} <color={GetColorHexString(0, 100, percentage)}>{percentage}%</color> ";
+                var percentage = Mathf.RoundToInt(__instance.Ammo / __instance.AmmoMaxCap * 100f);
+                sentryArch = $"{sentryArch} <color={GetColorHexString(0, 100, percentage)}>{percentage}%</color>";
             }
 
             if (!string.IsNullOrWhiteSpace(sentryArch))
