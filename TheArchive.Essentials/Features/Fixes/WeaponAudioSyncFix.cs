@@ -15,7 +15,7 @@ public class WeaponAudioSyncFix : Feature
 
     public override string Description => "Synchronize the charging and cooling sounds of firearms with other players who have also enabled this feature.";
 
-    public override GroupBase Group => ModuleGroup.GetOrCreateSubGroup("Fixes");
+    public override GroupBase Group => GroupManager.Fixes;
 
     public override void OnEnable()
     {
