@@ -19,7 +19,7 @@
       "TheArchive.Features.Fixes.ReloadMinusOneBugFix.Description": {
         "FDescription": {
           "English": "Fixes the bug that leaves you with one bullet short in the mag.\n(Currently only for IL2CPP builds)",
-          "Chinese": "修复了弹夹里只剩下一颗子弹的bug\n(目前只适用于IL2CPP版本)",
+          "Chinese": "修复了换弹后弹夹里缺少一发子弹的bug\n(目前只适用于IL2CPP版本)",
           "French": null,
           "Italian": null,
           "German": null,
