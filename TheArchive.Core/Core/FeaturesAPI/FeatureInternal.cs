@@ -529,6 +529,16 @@ internal class FeatureInternal
                                           && AnyRundownConstraintMatches(mi)
                                           && AnyBuildConstraintMatches(mi));
 
+                var reverseOriginalMethodInfo = patchTypeMethods
+                    .FirstOrDefault(mi => (mi.Name == "Original" || mi.GetCustomAttribute<IsOriginal>() != null)
+                                          && AnyRundownConstraintMatches(mi)
+                                          && AnyBuildConstraintMatches(mi));
+
+                var reverseSnapshotMethodInfo = patchTypeMethods
+                    .FirstOrDefault(mi => (mi.Name == "Snapshot" || mi.GetCustomAttribute<IsSnapshot>() != null)
+                                          && AnyRundownConstraintMatches(mi)
+                                          && AnyBuildConstraintMatches(mi));
+
                 if (transpilerMethodInfo != null && originalMethodIsNative)
                 {
                     _FILogger.Error($"Can't apply Transpiler \"{transpilerMethodInfo.Name}\" on native method \"{original.Name}\" from IL2CPP Type \"{original.DeclaringType.FullName}\"!");
@@ -543,9 +553,9 @@ internal class FeatureInternal
                     ilManipulatorMethodInfo = null;
                 }
 
-                if (prefixMethodInfo == null && postfixMethodInfo == null && finalizerMethodInfo == null && transpilerMethodInfo == null && ilManipulatorMethodInfo == null)
+                if (prefixMethodInfo == null && postfixMethodInfo == null && finalizerMethodInfo == null && transpilerMethodInfo == null && ilManipulatorMethodInfo == null && reverseOriginalMethodInfo == null && reverseSnapshotMethodInfo == null)
                 {
-                    throw new ArchivePatchNoPatchMethodException($"Patch class \"{patchType.FullName}\" doesn't contain a Prefix, Postfix, Finalizer, Transpiler or ILManipulator method, at least one is required!");
+                    throw new ArchivePatchNoPatchMethodException($"Patch class \"{patchType.FullName}\" doesn't contain a Prefix, Postfix, Finalizer, Transpiler, ILManipulator or Original method, at least one is required!");
                 }
 
                 _patchInfos.Add(new FeaturePatchInfo(original,
@@ -554,6 +564,8 @@ internal class FeatureInternal
                     transpilerMethodInfo,
                     finalizerMethodInfo,
                     ilManipulatorMethodInfo,
+                    reverseOriginalMethodInfo,
+                    reverseSnapshotMethodInfo,
                     archivePatchInfo));
 
                 try
@@ -714,6 +726,10 @@ internal class FeatureInternal
             try
             {
                 _FILogger.Msg(ConsoleColor.DarkBlue, $"Patching {_feature.Identifier} : {patchInfo.ArchivePatchInfo.Type.FullName}.{patchInfo.ArchivePatchInfo.MethodName}()");
+                if (patchInfo.HarmonyOriginalReverseMethod != null)
+                    _harmonyInstance.CreateReversePatcher(patchInfo.OriginalMethod, patchInfo.HarmonyOriginalReverseMethod).Patch();
+                if (patchInfo.HarmonySnapshotReverseMethod != null)
+                    _harmonyInstance.CreateReversePatcher(patchInfo.OriginalMethod, patchInfo.HarmonySnapshotReverseMethod).Patch();
                 _harmonyInstance.Patch(patchInfo.OriginalMethod,
                     prefix: patchInfo.HarmonyPrefixMethod,
                     postfix: patchInfo.HarmonyPostfixMethod,
@@ -1171,6 +1187,8 @@ internal class FeatureInternal
         internal HarmonyLib.HarmonyMethod HarmonyTranspilerMethod { get; }
         internal HarmonyLib.HarmonyMethod HarmonyFinalizerMethod { get; }
         internal HarmonyLib.HarmonyMethod HarmonyILManipulatorMethod { get; }
+        internal HarmonyLib.HarmonyMethod HarmonyOriginalReverseMethod { get; }
+        internal HarmonyLib.HarmonyMethod HarmonySnapshotReverseMethod { get; }
 
         // ReSharper disable UnusedAutoPropertyAccessor.Local
         internal MethodInfo PrefixPatchMethod { get; private set; }
@@ -1178,9 +1196,11 @@ internal class FeatureInternal
         internal MethodInfo TranspilerPatchMethod { get; private set; }
         internal MethodInfo FinalizerPatchMethod { get; private set; }
         internal MethodInfo ILManipulatorPatchMethod { get; private set; }
+        internal MethodInfo OriginalReversePatchMethod { get; private set; }
+        internal MethodInfo SnapshotReversePatchMethod { get; private set; }
         // ReSharper restore UnusedAutoPropertyAccessor.Local
 
-        public FeaturePatchInfo(MethodBase original, MethodInfo prefix, MethodInfo postfix, MethodInfo transpiler, MethodInfo finalizer, MethodInfo ilManipulator, ArchivePatch archivePatch, bool wrapTryCatch = true)
+        public FeaturePatchInfo(MethodBase original, MethodInfo prefix, MethodInfo postfix, MethodInfo transpiler, MethodInfo finalizer, MethodInfo ilManipulator, MethodInfo originalReverse, MethodInfo snapshotReverse, ArchivePatch archivePatch, bool wrapTryCatch = true)
         {
             OriginalMethod = original;
 
@@ -1189,6 +1209,8 @@ internal class FeatureInternal
             TranspilerPatchMethod = transpiler;
             FinalizerPatchMethod = finalizer;
             ILManipulatorPatchMethod = ilManipulator;
+            OriginalReversePatchMethod = originalReverse;
+            SnapshotReversePatchMethod = snapshotReverse;
 
             ArchivePatchInfo = archivePatch;
 
@@ -1241,6 +1263,18 @@ internal class FeatureInternal
                             .SelectMany(attr => attr.After).Distinct().ToArray(),
                     before = ilManipulator.GetCustomAttributes<ArchiveBefore>(true)
                             .SelectMany(attr => attr.Before).Distinct().ToArray(),
+                };
+            if (originalReverse != null)
+                HarmonyOriginalReverseMethod = new HarmonyLib.HarmonyMethod(originalReverse)
+                {
+                    wrapTryCatch = wrapTryCatch,
+                    reversePatchType = HarmonyReversePatchType.Original
+                };
+            if (snapshotReverse != null)
+                HarmonySnapshotReverseMethod = new HarmonyLib.HarmonyMethod(snapshotReverse)
+                {
+                    wrapTryCatch = wrapTryCatch,
+                    reversePatchType = HarmonyReversePatchType.Snapshot
                 };
         }
     }
