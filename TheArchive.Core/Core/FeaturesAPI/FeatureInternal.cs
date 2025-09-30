@@ -555,7 +555,7 @@ internal class FeatureInternal
 
                 if (prefixMethodInfo == null && postfixMethodInfo == null && finalizerMethodInfo == null && transpilerMethodInfo == null && ilManipulatorMethodInfo == null && reverseOriginalMethodInfo == null && reverseSnapshotMethodInfo == null)
                 {
-                    throw new ArchivePatchNoPatchMethodException($"Patch class \"{patchType.FullName}\" doesn't contain a Prefix, Postfix, Finalizer, Transpiler, ILManipulator or Original method, at least one is required!");
+                    throw new ArchivePatchNoPatchMethodException($"Patch class \"{patchType.FullName}\" doesn't contain a Prefix, Postfix, Finalizer, Transpiler, ILManipulator, Original or Snapshot method, at least one is required!");
                 }
 
                 _patchInfos.Add(new FeaturePatchInfo(original,
