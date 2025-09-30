@@ -50,6 +50,8 @@ public class WeaponAudioSyncFix : Feature
     {
         private static void Postfix(BulletWeaponSynced __instance)
         {
+            if (__instance.AudioData == null)
+                return;
             __instance.m_audioChargeup = BulletWeapon.GetRandomAudioEvents(__instance.AudioData.eventOnChargeup2D);
             __instance.m_audioCooldown = BulletWeapon.GetRandomAudioEvents(__instance.AudioData.eventOnCooldown2D);
             __instance.m_audioChargeupEnd = __instance.AudioData.eventOnChargeupEnd2D;
