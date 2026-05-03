@@ -16,8 +16,8 @@ public class ArchiveBefore : Attribute
 
 public class ArchiveBeforeFeature : ArchiveBefore
 {
-    public ArchiveBeforeFeature(params string[] identifiers)
+    public ArchiveBeforeFeature(params string[] guids)
     {
-        Before = identifiers?.Select(s => string.Format($"{ArchiveMod.MOD_NAME}_FeaturesAPI_{s}")).Distinct().ToArray();
+        Before = guids?.Select(s => string.Format($"{ArchiveMod.MOD_NAME}_FeaturesAPI_{s}")).Distinct().ToArray();
     }
 }

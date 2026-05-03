@@ -124,6 +124,7 @@ internal class FeatureInternal
     private bool _doLocalizeDescription;
     
     private static readonly HashSet<string> _usedIdentifiers = new();
+    private static readonly HashSet<string> _usedGuids = new();
     private static readonly IArchiveLogger _FILogger = LoaderWrapper.CreateArSubLoggerInstance(nameof(FeatureInternal), ConsoleColor.DarkYellow);
 
     private static Type _gameStateType;
@@ -186,7 +187,12 @@ internal class FeatureInternal
 
         if (!_usedIdentifiers.Add(_feature.Identifier))
         {
-            throw new ArchiveFeatureDuplicateIDException($"Provided feature id \"{_feature.Identifier}\" has already been registered by {FeatureManager.GetById(_feature.Identifier)}!");
+            _FILogger.Warning($"Provided feature id \"{_feature.Identifier}\" has already been registered by {FeatureManager.GetById(_feature.Identifier)}!");
+        }
+        
+        if (!_usedGuids.Add(_feature.GUID))
+        {
+            throw new ArchiveFeatureDuplicateIDException($"Provided feature guid \"{_feature.GUID}\" has already been registered by {FeatureManager.GetByGuid(_feature.GUID)}!");
         }
 
         FeatureLoggerInstance = LoaderWrapper.CreateArSubLoggerInstance($"F::{_feature.Identifier}", ConsoleColor.Cyan);
@@ -371,7 +377,7 @@ internal class FeatureInternal
             }
         }
 
-        _harmonyInstance = new HarmonyLib.Harmony($"{ArchiveMod.MOD_NAME}_FeaturesAPI_{_feature.Identifier}");
+        _harmonyInstance = new HarmonyLib.Harmony($"{ArchiveMod.MOD_NAME}_FeaturesAPI_{_feature.GUID}");
 
         var potentialPatchTypes = _featureType.GetNestedTypes(AnyBindingFlagss).Where(nt => nt.GetCustomAttribute<ArchivePatch>() != null);
 

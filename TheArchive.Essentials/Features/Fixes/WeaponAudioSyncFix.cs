@@ -122,7 +122,7 @@ public class WeaponAudioSyncFix : Feature
         private pSimpleItemSyncData _lastSyncData;
         private float _lastSyncTime;
         private const float _syncTimeout = 0.5f;
-        private const float _syncInterval = 0.125f;
+        private const float _syncInterval = 0.25f;
         private bool _syncCharging;
         private bool _syncCooldown;
 
@@ -137,15 +137,18 @@ public class WeaponAudioSyncFix : Feature
             if (!_weapon.IsEnabled)
                 return;
 
-            if (Clock.Time - _lastSyncTime > _syncInterval)
+            bool lastInCooldown = _lastSyncData.inCooldown;
+            bool lastInFireMode = _lastSyncData.inFireMode;
+            bool lastInAimMode = _lastSyncData.inAimMode;
+            _lastSyncData.inCooldown = _weapon.m_archeType.HasCooldown && _weapon.m_archeType.m_nextBurstTimer > Clock.Time;
+            _lastSyncData.inFireMode = _weapon.m_archeType.m_inChargeup;
+            _lastSyncData.inAimMode = _weapon.AimButtonHeld;
+            if (lastInCooldown != _lastSyncData.inCooldown
+                || lastInFireMode != _lastSyncData.inFireMode
+                || lastInAimMode != _lastSyncData.inAimMode
+                || Clock.Time - _lastSyncTime > _syncInterval)
             {
-                var data = new pSimpleItemSyncData()
-                {
-                    inCooldown = _weapon.m_archeType.HasCooldown && _weapon.m_archeType.m_nextBurstTimer > Clock.Time,
-                    inFireMode = _weapon.m_archeType.m_inChargeup,
-                    inAimMode = _weapon.AimButtonHeld
-                };
-                _weapon.Owner.Inventory.SendSimpleItemStatus(data, false);
+                _weapon.Owner.Inventory.SendSimpleItemStatus(_lastSyncData, false);
                 _lastSyncTime = Clock.Time;
             }
         }

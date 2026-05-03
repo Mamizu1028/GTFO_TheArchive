@@ -16,8 +16,8 @@ public class ArchiveAfter : Attribute
 
 public class ArchiveAfterFeature : ArchiveAfter
 {
-    public ArchiveAfterFeature(params string[] identifiers)
+    public ArchiveAfterFeature(params string[] guids)
     {
-        After = identifiers?.Select(s => string.Format($"{ArchiveMod.MOD_NAME}_FeaturesAPI_{s}")).Distinct().ToArray();
+        After = guids?.Select(s => string.Format($"{ArchiveMod.MOD_NAME}_FeaturesAPI_{s}")).Distinct().ToArray();
     }
 }

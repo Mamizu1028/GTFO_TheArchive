@@ -21,7 +21,10 @@ public class SubmenuSetting : FeatureSetting
     /// <inheritdoc/>
     public SubmenuSetting(FeatureSettingsHelper featureSettingsHelper, PropertyInfo prop, object host, string debugPath = "") : base(featureSettingsHelper, prop, prop.GetValue(host), debugPath)
     {
-        SettingsHelper = new FeatureSettingsHelper(featureSettingsHelper.Feature, prop);
+        SettingsHelper = new FeatureSettingsHelper(featureSettingsHelper.Feature, prop)
+        {
+            ParentHelper = featureSettingsHelper,
+        };
         SettingsHelper.SetupViaInstanceOnHost(host, prop.GetValue(host));
 
         UseDynamicMenu = prop.GetCustomAttribute<FSUseDynamicSubmenu>() != null;
