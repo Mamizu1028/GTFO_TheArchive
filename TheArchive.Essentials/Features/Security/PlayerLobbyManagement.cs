@@ -585,6 +585,8 @@ public class PlayerLobbyManagement : Feature
         {
             if(joined)
             {
+                if (!player.IsBot)
+                    SteamFriends.SetPlayedWith(new CSteamID(player.Lookup));
                 FeatureLogger.Notice($"{player.NickName} joined Session, last time played with them {DateTime.UtcNow - new DateTime(entry.TimestampLast):d' day(s) and 'hh':'mm':'ss} ago.");
             }
             else
